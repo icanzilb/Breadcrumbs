@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import STTextView
 
 struct CrumbDetailView: View {
     @EnvironmentObject var model: CrumbModel
