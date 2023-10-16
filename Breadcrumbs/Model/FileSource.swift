@@ -24,7 +24,7 @@ class FileSource {
 
     func lines(max: UInt) -> [Line] {
         var result = [Line]()
-        for number in (location.line-1)...(location.line+max) where number < contents.count {
+        for number in (location.line > 0 ? location.line-1 : 0)...(location.line+max) where number < contents.count {
             result.append(
                 Line(number: number, text: contents[Int(number)].appending("\n"))
             )
