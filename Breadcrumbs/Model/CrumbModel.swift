@@ -72,8 +72,8 @@ class CrumbModel: ObservableObject {
         
         Task {
             var categories: [CrumbCategory] = [
-                CrumbCategory(name: "TODO", prefix: "// TODO: ", icon: "app.badge.checkmark.fill", tint: .indigo, children: []),
-                CrumbCategory(name: "FIXIT", prefix: "// FIXIT: ", icon: "hammer.fill", tint: .mint, children: []),
+                CrumbCategory(name: "TODO", prefixes: ["// TODO: "], icon: "app.badge.checkmark.fill", tint: .indigo, children: []),
+                CrumbCategory(name: "FIXES", prefixes: ["// FIXIT: ", "// FIXME: "], icon: "hammer.fill", tint: .mint, children: [])
             ]
             try loadCrumbs(
                 in: &categories,
@@ -113,26 +113,37 @@ class CrumbModel: ObservableObject {
             for (number, line) in contents.enumerated() {
                 
                 for (categoryIndex, category) in categories.enumerated() {
-                    if line.contains(category.prefix) {
-                        let newLocation = Crumb.Location(
-                            fileURL: fileURL,
-                            fileID: fileURL.path,
-                            line: UInt(number)
-                        )
-                        if crumbIDs.contains(newLocation.string) {
-                            print("Duplicate crumb")
-                            continue
-                        }
-                        let newCrumb = Crumb(
-                            text: line.trimmingCharacters(in: .whitespacesAndNewlines),
-                            prefix: category.prefix,
-                            location: newLocation
-                        )
-                        categories[categoryIndex].children!.append(newCrumb)
-                        crumbIDs.insert(newCrumb.location.string)
+                    var crumbAdded = false
 
-                        // don't cycle other categories if the crumb is already added
-                        continue
+                    for prefix in category.prefixes {
+                        if line.contains(prefix) {
+                            crumbAdded = true
+
+                            let newLocation = Crumb.Location(
+                                fileURL: fileURL,
+                                fileID: fileURL.path,
+                                line: UInt(number)
+                            )
+                            if crumbIDs.contains(newLocation.string) {
+                                print("Duplicate crumb")
+                                continue
+                            }
+                            let newCrumb = Crumb(
+                                text: line.trimmingCharacters(in: .whitespacesAndNewlines),
+                                prefix: prefix,
+                                location: newLocation
+                            )
+                            categories[categoryIndex].children!.append(newCrumb)
+                            crumbIDs.insert(newCrumb.location.string)
+
+                            // don't cycle other prefixes if this is already added
+                            break
+                        }
+                    }
+
+                    if crumbAdded {
+                        // don't cycle other categories if crumb already added
+                        break
                     }
                 }
             }
