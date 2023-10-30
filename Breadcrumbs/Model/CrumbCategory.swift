@@ -14,7 +14,7 @@ struct CrumbCategory: Identifiable, Hashable {
     var id: String { name }
 
     let name: String
-    let prefix: String
+    let prefixes: [String]
     let icon: String
     let tint: Color
     var children: [Crumb]? = nil
